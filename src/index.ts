@@ -1,6 +1,6 @@
 import bodyParser from 'body-parser'
 import { Request, Response } from 'express' //eslint-disable-line
-import { Application, GitHubAPI } from 'probot' //eslint-disable-line
+import { Application } from 'probot' //eslint-disable-line
 
 export = async (app: Application) => {
   const router = app.route('/make-in-india-bot')
@@ -9,7 +9,9 @@ export = async (app: Application) => {
 
   router.post('/product', async (req: Request, res: Response) => {
     const { title, body }: { title: string; body: string } = req.body
-    const github = await app.auth(process.env.INSTALLATION_ID)
+    const installationId = parseInt(process.env.INSTALLATION_ID, 10)
+
+    const github = await app.auth(installationId)
 
     try {
       await github.issues.create({
