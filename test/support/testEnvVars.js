@@ -1,0 +1,8 @@
+process.env.WEBHOOK_PROXY_URL = 'https://smee.io/B7Lxvcdlad5UXoq'
+process.env.APP_ID = '2'
+process.env.WEBHOOK_SECRET = 'secret'
+process.env.CLIENT_ID = 'client_id'
+process.env.CLIENT_SECRET = 'client_secret'
+process.env.INSTALLATION_ID = '12'
+process.env.REPO_OWNER = 'AatmNirbharBharat'
+process.env.REPO = 'products'

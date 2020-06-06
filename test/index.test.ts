@@ -1,51 +1,55 @@
-// You can import your modules
-// import index from '../src/index'
-
 import nock from 'nock'
-// Requiring our app implementation
-import myProbotApp from '../src'
+import path from 'path'
 import { Probot } from 'probot'
-// Requiring our fixtures
-import payload from './fixtures/issues.opened.json'
-const issueCreatedBody = { body: 'Thanks for opening this issue!' }
-const fs = require('fs')
-const path = require('path')
+import request from 'supertest'
+import myProbotApp from '../src'
+// tslint:disable-next-line: no-var-requires
+import { promises as fs } from 'fs'
 
 describe('My Probot app', () => {
   let probot: any
   let mockCert: string
 
-  beforeAll((done: Function) => {
-    fs.readFile(path.join(__dirname, 'fixtures/mock-cert.pem'), (err: Error, cert: string) => {
-      if (err) return done(err)
-      mockCert = cert
-      done()
-    })
+  beforeAll(async () => {
+    mockCert = await fs.readFile(
+      path.join(__dirname, 'fixtures/mock-cert.pem'),
+      'binary'
+    )
   })
 
   beforeEach(() => {
     nock.disableNetConnect()
+    nock.enableNetConnect('127.0.0.1')
     probot = new Probot({ id: 123, cert: mockCert })
-    // Load our app into probot
     probot.load(myProbotApp)
   })
 
-  test('creates a comment when an issue is opened', async (done) => {
-    // Test that we correctly return a test token
+  test('creates a comment when an issue is opened', async () => {
     nock('https://api.github.com')
-      .post('/app/installations/2/access_tokens')
-      .reply(200, { token: 'test' })
-
-    // Test that a comment is posted
-    nock('https://api.github.com')
-      .post('/repos/hiimbex/testing-things/issues/1/comments', (body: any) => {
-        done(expect(body).toMatchObject(issueCreatedBody))
-        return true
+      .persist()
+      .post('/app/installations/12/access_tokens')
+      .reply(200, {
+        createdAt: '2020-06-04T16:03:15.160Z',
+        expiresAt: '2020-06-04T17:03:14Z',
+        installationId: 9484460,
+        permissions: { issues: 'write', metadata: 'read' },
+        repositorySelection: 'selected',
+        token: 'v1.f345aa79d81a23d96721b11f53319ac4e5fc33f1',
+        type: 'token'
       })
+
+    nock('https://api.github.com')
+      .post('/repos/AatmNirbharBharat/products/issues')
       .reply(200)
 
-    // Receive a webhook event
-    await probot.receive({ name: 'issues', payload })
+    const response = await request(probot.server)
+      .post('/make-in-india-bot/product')
+      .send({
+        body: 'Issue Body',
+        title: 'Issue Title'
+      })
+
+    expect(response.status).toEqual(200)
   })
 
   afterEach(() => {
@@ -53,12 +57,3 @@ describe('My Probot app', () => {
     nock.enableNetConnect()
   })
 })
-
-// For more information about testing with Jest see:
-// https://facebook.github.io/jest/
-
-// For more information about using TypeScript in your tests, Jest recommends:
-// https://github.com/kulshekhar/ts-jest
-
-// For more information about testing with Nock see:
-// https://github.com/nock/nock
