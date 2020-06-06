@@ -9,13 +9,7 @@ export = async (app: Application) => {
 
   router.post('/product', async (req: Request, res: Response) => {
     const { title, body }: { title: string; body: string } = req.body
-    const installationToken: string = await app.app.getInstallationAccessToken({
-      installationId: parseInt(process.env.INSTALLATION_ID, 10)
-    })
-    const github = GitHubAPI({
-      auth: installationToken,
-      logger: app.log.child({ name: 'make-in-india-bot' })
-    })
+    const github = await app.auth(process.env.INSTALLATION_ID)
 
     try {
       await github.issues.create({
